@@ -1,1 +1,1 @@
-# 3d_universe
+Requires qhull.
