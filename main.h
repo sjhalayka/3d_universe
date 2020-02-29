@@ -70,20 +70,6 @@ map<size_t, vector<size_t> > tri_neighbours;
 
 
 
-vector_3 get_tri_centre(const indexed_triangle& it)
-{
-	vector_3 ret;
-
-	vector_3 a = vertices[it.vertex_indices[0]];
-	vector_3 b = vertices[it.vertex_indices[1]];
-	vector_3 c = vertices[it.vertex_indices[2]];
-
-	ret = a + b + c;
-
-	ret = ret / 3.0;
-
-	return ret;
-}
 
 
 void get_sorted_lines_from_triangle(size_t tri_index, vector<indexed_line_segment>& lines)
@@ -183,33 +169,6 @@ void get_all_tri_neighbours(void)
 }
 
 
-void attract_vertices(const size_t rounds)
-{
-	for (size_t r = 0; r < rounds; r++)
-	{
-		for (size_t i = 0; i < vertices.size(); i++)
-		{
-			if(i % 100 == 0)
-			cout << "attraction round " << r + 1 << " of " << rounds << "  vertex " << i + 1 << " of " << vertices.size() << endl;
-
-			vector_3 acceleration;
-
-			for (size_t j = 0; j < vertices.size(); j++)
-			{
-				if (i == j)
-					continue;
-
-				double distance = (vertices[i] - vertices[j]).length();
-				acceleration += (vertices[i] - vertices[j]).normalize() * (1.0 / (distance*distance));
-			}
-
-			vertices[i] = vertices[i] + acceleration;
-		}
-
-		for (size_t i = 0; i < vertices.size(); i++)
-			vertices[i].normalize();
-	}
-}
 
 
 void get_vertices_and_triangles(const size_t num_vertices)
