@@ -5,6 +5,10 @@
 #define main_H
 
 
+
+#define _CRT_SECURE_NO_WARNINGS 1
+
+
 #include "uv_camera.h"
 #include "custom_math.h"
 using namespace custom_math;
@@ -18,6 +22,12 @@ using namespace custom_math;
 #include <algorithm>
 using namespace std;
 
+
+
+
+#include <opencv2/opencv.hpp>
+using namespace cv;
+#pragma comment(lib, "opencv_world411.lib")
 
 
 
@@ -68,6 +78,91 @@ vector<indexed_triangle> triangles;
 map<size_t, vector<size_t> > tri_neighbours;
 
 
+vector<float> get_tri_edge_lengths(const indexed_triangle& it)
+{
+	vector<float> ret;
+
+	vector_3 v0 = vertices[it.vertex_indices[0]];
+	vector_3 v1 = vertices[it.vertex_indices[1]];
+	vector_3 v2 = vertices[it.vertex_indices[2]];
+
+	ret.push_back(static_cast<float>(d_3(v0, v1)));
+	ret.push_back(static_cast<float>(d_3(v0, v2)));
+	ret.push_back(static_cast<float>(d_3(v1, v2)));
+
+	return ret;
+}
+
+
+
+void write_histogram(vector<float> input_vec, const char* const filename)
+{
+
+	float input_vec_max_val = 0;
+
+	for (size_t i = 0; i < input_vec.size(); i++)
+	{
+		if (input_vec[i] > input_vec_max_val)
+			input_vec_max_val = input_vec[i];
+	}
+
+	for (size_t i = 0; i < input_vec.size(); i++)
+	{
+		input_vec[i] /= input_vec_max_val;
+		input_vec[i] *= 255.0f;
+		input_vec[i] = floorf(input_vec[i]);
+	}
+
+	Mat data(1, static_cast<int>(input_vec.size()), CV_8UC1, Scalar(0));
+
+	for (size_t i = 0; i < input_vec.size(); i++)
+		data.at<unsigned char>(0, static_cast<int>(i)) = static_cast<unsigned char>(input_vec[i]);
+
+	int histSize = 256;
+	float range[] = { 0, 256 }; //the upper boundary is exclusive
+	const float* histRange = { range };
+	bool uniform = true, accumulate = false;
+	Mat hist;
+	calcHist(&data, 1, 0, Mat(), hist, 1, &histSize, &histRange, uniform, accumulate);
+
+	int hist_w = 600, hist_h = 600;
+	int bin_w = cvRound((double)hist_w / histSize);
+	Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(255, 255, 255));
+	normalize(hist, hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
+
+	float largest_hist = 0;
+	float largest_hist_j = 0;
+
+	for (int j = 0; j < hist.rows; j++)
+	{
+		for (int i = 0; i < hist.cols; i++)
+		{
+			if (hist.at<float>(j, i) > largest_hist)
+			{
+				largest_hist = hist.at<float>(j, i);
+				largest_hist_j = static_cast<float>(j);
+			}
+		}
+	}
+
+	for (int i = 1; i < histSize; i++)
+	{
+		line(histImage, Point(bin_w * (i - 1), hist_h - cvRound(hist.at<float>(i - 1))),
+			Point(bin_w * (i), hist_h - cvRound(hist.at<float>(i))),
+			Scalar(0, 0, 0), 1, 8, 0);
+	}
+
+	float factor = static_cast<float>(largest_hist_j * bin_w) / static_cast<float>(histImage.cols - 1);
+	cout << "max value:  " << input_vec_max_val << endl;
+	cout << "peak value: " << input_vec_max_val * factor << endl;
+
+
+	//circle(histImage, Point(static_cast<int>(largest_hist_j)* bin_w, 0), 2, Scalar(255, 127, 0), 2);
+
+	imwrite(filename, histImage);
+	//imshow("calcHist Demo", histImage);
+	//waitKey();
+}
 
 
 

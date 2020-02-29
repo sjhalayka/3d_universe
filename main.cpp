@@ -3,9 +3,13 @@
 
 int main(int argc, char **argv)
 {	
-	get_vertices_and_triangles(1000);
+	get_vertices_and_triangles(100000);
 
 	double K = 0;
+
+	vector<float> edge_lengths;
+
+
 
 	for (size_t i = 0; i < triangles.size(); i++)
 	{
@@ -14,6 +18,13 @@ int main(int argc, char **argv)
 			cout << "Error" << endl;
 			return 1;
 		}
+
+
+		vector<float> e = get_tri_edge_lengths(triangles[i]);
+
+		for (size_t j = 0; j < e.size(); j++)
+			edge_lengths.push_back(e[j]);
+
 
 		vector_3 a = vertices[triangles[i].vertex_indices[2]];
 		vector_3 b = vertices[triangles[i].vertex_indices[1]];
@@ -72,6 +83,17 @@ int main(int argc, char **argv)
 	K /= static_cast<double>(triangles.size());
 
 	cout << 2.0 + K << endl;
+
+
+	write_histogram(edge_lengths, "histogram.png");
+
+
+
+	return 0;
+
+
+
+
 
 	glutInit(&argc, argv);
 	init_opengl(win_x, win_y);
