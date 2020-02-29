@@ -3,7 +3,7 @@
 
 int main(int argc, char **argv)
 {	
-	get_vertices_and_triangles(100000);
+	get_vertices_and_triangles(1000);
 
 	double K = 0;
 
@@ -86,11 +86,6 @@ int main(int argc, char **argv)
 
 
 	write_histogram(edge_lengths, "histogram.png");
-
-
-
-	return 0;
-
 
 
 

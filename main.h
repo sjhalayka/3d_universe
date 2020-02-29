@@ -78,6 +78,9 @@ vector<indexed_triangle> triangles;
 map<size_t, vector<size_t> > tri_neighbours;
 
 
+
+
+
 vector<float> get_tri_edge_lengths(const indexed_triangle& it)
 {
 	vector<float> ret;
@@ -313,7 +316,6 @@ void get_vertices_and_triangles(const size_t num_vertices)
 	rbox_file_out << vertices.size() << endl;
 
 	// Process vertices here
-	//attract_vertices(1000);
 
 	for (size_t i = 0; i < vertices.size(); i++)
 		rbox_file_out << vertices[i].x << " " << vertices[i].y << " " << vertices[i].z << endl;
