@@ -79,6 +79,57 @@ map<size_t, vector<size_t> > tri_neighbours;
 
 
 
+void repel_vertices(const size_t rounds)
+{
+	const size_t n = vertices.size();
+	vector<vector_3> acceleration(n, vector_3(0, 0, 0));
+
+	// Repulse vertices.
+	for (size_t i = 0; i < rounds; i++)
+	{
+		for (size_t j = 0; j < n; j++)
+		{
+			// Skip duplicate accelerations.
+			for (size_t k = j + 1; k < n; k++)
+			{
+				vector_3 accel = vertices[j] - vertices[k];
+				double distance = accel.length();
+				accel.normalize();
+
+				accel *= 1.0 / (n * n * distance * distance);
+				acceleration[j] += accel;
+				acceleration[k] += -accel;
+			}
+		}
+
+		for (size_t j = 0; j < n; j++)
+		{
+			// Since the velocity of a vertex at the beginning of each round
+			// is always zero, it's OK to directly add acceleration to position.
+			vertices[j] += acceleration[j];
+
+			// Reset back to unit radius before the next round begins.
+			vertices[j].normalize();
+		}
+
+		// Reset accelerations to zero before the next round begins.
+		fill(acceleration.begin(), acceleration.end(), vector_3(0, 0, 0));
+	}
+
+	// Restore original radius, and fourth dimension.
+	for (size_t i = 0; i < n; i++)
+	{
+		vertices[i].normalize();
+	}
+}
+
+
+
+
+
+
+
+
 
 
 vector<float> get_tri_edge_lengths(const indexed_triangle& it)
@@ -315,7 +366,7 @@ void get_vertices_and_triangles(const size_t num_vertices)
 	rbox_file_out << rbox_cmdline_short << endl;
 	rbox_file_out << vertices.size() << endl;
 
-	// Process vertices here
+	// repel_vertices(1000);
 
 	for (size_t i = 0; i < vertices.size(); i++)
 		rbox_file_out << vertices[i].x << " " << vertices[i].y << " " << vertices[i].z << endl;
